@@ -7,10 +7,11 @@ import {
   Database,
   ExternalLink,
   ChevronRight,
-  Sparkles
+  Sparkles,
+  Smartphone
 } from 'lucide-react';
 
-export default function Sidebar({ activeTab, setActiveTab, mobileOpen, setMobileOpen, dbStatus }) {
+export default function Sidebar({ activeTab, setActiveTab, mobileOpen, setMobileOpen, dbStatus, onInstallApp }) {
   const navItems = [
     { id: 'dashboard', label: 'Dashboard & Analitik', icon: LayoutDashboard, badge: null },
     { id: 'pos', label: 'Kasir & Input Penjualan', icon: ShoppingCart, badge: 'POS' },
@@ -121,6 +122,17 @@ export default function Sidebar({ activeTab, setActiveTab, mobileOpen, setMobile
           >
             <span>{dbStatus.connected ? 'Cek Status Cloud' : 'Buka Skrip SQL'}</span>
             <ChevronRight size={14} />
+          </button>
+        </div>
+
+        {/* Install to Phone button in Sidebar */}
+        <div className="px-4 mb-3">
+          <button
+            onClick={onInstallApp}
+            className="w-full py-2.5 px-3 rounded-xl bg-slate-100 hover:bg-slate-200/80 text-slate-800 text-xs font-bold transition-all flex items-center justify-center gap-2"
+          >
+            <Smartphone size={16} className="text-brand-600" />
+            <span>Install Aplikasi di HP</span>
           </button>
         </div>
 

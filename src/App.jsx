@@ -23,10 +23,40 @@ export default function App() {
   const [dbStatus, setDbStatus] = useState({ connected: false, checking: true });
   const [refreshing, setRefreshing] = useState(false);
   const [toast, setToast] = useState(null);
+  const [deferredPrompt, setDeferredPrompt] = useState(null);
 
   const showToast = (message, type = 'success') => {
     setToast({ message, type });
     setTimeout(() => setToast(null), 3500);
+  };
+
+  // Listen for PWA Install Prompt (Chrome Android / Desktop)
+  useEffect(() => {
+    const handleBeforeInstall = (e) => {
+      e.preventDefault();
+      setDeferredPrompt(e);
+    };
+    window.addEventListener('beforeinstallprompt', handleBeforeInstall);
+    return () => window.removeEventListener('beforeinstallprompt', handleBeforeInstall);
+  }, []);
+
+  const handleInstallApp = async () => {
+    if (deferredPrompt) {
+      deferredPrompt.prompt();
+      const choice = await deferredPrompt.userChoice;
+      if (choice.outcome === 'accepted') {
+        setDeferredPrompt(null);
+        showToast('Aplikasi Justeathere berhasil di-install ke HP!', 'success');
+      }
+    } else {
+      alert(
+        'Cara Install ke HP Android:\n\n' +
+        '1. Buka website https://justeathere-app.vercel.app di Google Chrome HP Anda.\n' +
+        '2. Tekan menu titik tiga (⋮) di pojok kanan atas Chrome.\n' +
+        '3. Pilih "Install aplikasi" (atau "Tambahkan ke Layar Utama").\n' +
+        '4. Ikon Justeathere akan otomatis muncul di layar utama HP Anda dan bisa dibuka langsung tanpa membuka browser lagi!'
+      );
+    }
   };
 
   // Load data and test Supabase connection
@@ -106,6 +136,7 @@ export default function App() {
         mobileOpen={mobileOpen}
         setMobileOpen={setMobileOpen}
         dbStatus={dbStatus}
+        onInstallApp={handleInstallApp}
       />
 
       {/* Main Content Area */}
@@ -117,6 +148,7 @@ export default function App() {
           dbStatus={dbStatus}
           refreshing={refreshing}
           onRefresh={loadData}
+          onInstallApp={handleInstallApp}
         />
 
         <main className="flex-1 p-4 sm:p-8 max-w-7xl w-full mx-auto">

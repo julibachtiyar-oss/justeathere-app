@@ -1,5 +1,5 @@
 import React from 'react';
-import { Menu, PlusCircle, RefreshCw, Database, CheckCircle2, AlertCircle } from 'lucide-react';
+import { Menu, PlusCircle, RefreshCw, Database, CheckCircle2, AlertCircle, Smartphone } from 'lucide-react';
 
 export default function Header({ 
   activeTab, 
@@ -7,7 +7,8 @@ export default function Header({
   setActiveTab, 
   dbStatus, 
   refreshing, 
-  onRefresh 
+  onRefresh,
+  onInstallApp
 }) {
   const titles = {
     dashboard: { title: 'Dashboard & Analitik Penjualan', subtitle: 'Pantau omset, pertumbuhan, dan performa produk Justeathere' },
@@ -73,6 +74,16 @@ export default function Header({
           title="Segarkan Data"
         >
           <RefreshCw size={18} className={refreshing ? 'animate-spin text-brand-600' : ''} />
+        </button>
+
+        {/* Install to Android / Phone button */}
+        <button
+          onClick={onInstallApp}
+          className="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-slate-900 hover:bg-slate-800 text-white font-semibold text-xs shadow-sm transition-all active:scale-95"
+          title="Install Aplikasi di HP Android"
+        >
+          <Smartphone size={15} />
+          <span className="hidden md:inline">Install di HP</span>
         </button>
 
         {/* Quick Catat button */}
