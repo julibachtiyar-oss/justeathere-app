@@ -31,8 +31,12 @@ export async function fetchProducts() {
       .order('name');
     
     if (!error && data && data.length > 0) {
-      localStorage.setItem('justeathere_products', JSON.stringify(data));
-      return { data, source: 'supabase' };
+      const enriched = data.map(item => {
+        const found = initialProducts.find(ip => ip.name.toLowerCase() === item.name.toLowerCase());
+        return found ? { ...item, image: found.image, badge: found.badge, description: found.description } : item;
+      });
+      localStorage.setItem('justeathere_products', JSON.stringify(enriched));
+      return { data: enriched, source: 'supabase' };
     }
   } catch (e) {
     console.warn('Error fetching products from Supabase, using local fallback:', e);
@@ -40,7 +44,14 @@ export async function fetchProducts() {
 
   const local = localStorage.getItem('justeathere_products');
   if (local) {
-    return { data: JSON.parse(local), source: 'local' };
+    try {
+      const parsed = JSON.parse(local);
+      const enriched = parsed.map(item => {
+        const found = initialProducts.find(ip => ip.name.toLowerCase() === item.name.toLowerCase());
+        return found ? { ...item, image: found.image, badge: found.badge, description: found.description } : item;
+      });
+      return { data: enriched, source: 'local' };
+    } catch (e) {}
   }
   return { data: initialProducts, source: 'seed' };
 }

@@ -117,12 +117,14 @@ export default function App() {
   };
 
   return (
-    <div className="min-h-screen bg-slate-50 flex">
+    <div className="min-h-screen bg-[#FAF7F2] text-espresso-900 flex">
       {/* Toast Notification */}
       {toast && (
         <div className="fixed top-5 right-5 z-50 animate-bounce">
-          <div className={`px-4 py-2.5 rounded-xl shadow-lg text-xs font-bold text-white flex items-center gap-2 ${
-            toast.type === 'info' ? 'bg-slate-900' : 'bg-brand-600'
+          <div className={`px-4 py-2.5 rounded-xl shadow-lg text-xs font-bold flex items-center gap-2 border ${
+            toast.type === 'info' 
+              ? 'bg-espresso-950 text-cream-50 border-espresso-800' 
+              : 'bg-espresso-900 text-cream-50 border-bischeese-500/50 shadow-bischeese-900/10'
           }`}>
             <span>{toast.message}</span>
           </div>

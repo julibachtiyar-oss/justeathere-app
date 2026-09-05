@@ -8,7 +8,8 @@ import {
   ChevronLeft, 
   ChevronRight,
   AlertTriangle,
-  ArrowUpDown
+  ArrowUpDown,
+  FileSpreadsheet
 } from 'lucide-react';
 
 export default function TransactionsView({ transactions, onDeleteTransaction }) {
@@ -37,11 +38,12 @@ export default function TransactionsView({ transactions, onDeleteTransaction }) 
 
   // Extract channels
   const channelsList = [
-    { id: 'ALL', label: 'Semua Kanal' },
+    { id: 'ALL', label: 'Semua Kanal Penjualan' },
     { id: 'bazar', label: 'Bazar Pagi' },
-    { id: 'pesantren', label: 'Pesantren' },
+    { id: 'pesantren', label: 'Pesantren (Pesanan Besar)' },
     { id: 'reseller', label: 'Reseller Mitra' },
-    { id: 'po', label: 'Pre-Order Umum' }
+    { id: 'po', label: 'Pre-Order Umum' },
+    { id: 'lala', label: 'Mitra Lala' }
   ];
 
   // Filtering & Sorting
@@ -99,13 +101,13 @@ export default function TransactionsView({ transactions, onDeleteTransaction }) 
 
   // Export to CSV
   const handleExportCSV = () => {
-    const headers = ['ID/Kode', 'Tanggal', 'Nama Pelanggan', 'Produk', 'Varian', 'Jumlah', 'Harga Satuan', 'Total'];
+    const headers = ['ID/Kode', 'Tanggal', 'Nama Pelanggan/Kanal', 'Produk', 'Varian', 'Jumlah', 'Harga Satuan', 'Total Penjualan'];
     const rows = filteredTransactions.map(t => [
       t.code || '',
       t.transaction_date || '',
-      `"${(t.customer_name || '').replace(/"/g, '""')}"`,
-      `"${(t.product_name || '').replace(/"/g, '""')}"`,
-      `"${(t.variant || '-').replace(/"/g, '""')}"`,
+      "",
+      "",
+      "",
       t.quantity || 0,
       t.unit_price || 0,
       t.total_price || 0
@@ -116,7 +118,7 @@ export default function TransactionsView({ transactions, onDeleteTransaction }) 
     const url = URL.createObjectURL(blob);
     const link = document.createElement('a');
     link.setAttribute('href', url);
-    link.setAttribute('download', `Justeathere_Laporan_Penjualan_${new Date().toISOString().slice(0, 10)}.csv`);
+    link.setAttribute('download', BISCHEESE_Laporan_Penjualan_.csv);
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
@@ -131,11 +133,11 @@ export default function TransactionsView({ transactions, onDeleteTransaction }) 
   return (
     <div className="space-y-6">
       {/* Top Filter & Action Bar */}
-      <div className="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-sm space-y-4">
+      <div className="bg-white p-5 sm:p-6 rounded-2xl border border-[#EAE2D5] shadow-sm space-y-4">
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
           {/* Search Bar */}
           <div className="relative flex-1">
-            <Search size={18} className="absolute left-3.5 top-3 text-slate-400" />
+            <Search size={18} className="absolute left-3.5 top-3 text-espresso-600" />
             <input
               type="text"
               value={searchTerm}
@@ -143,25 +145,25 @@ export default function TransactionsView({ transactions, onDeleteTransaction }) 
                 setSearchTerm(e.target.value);
                 setCurrentPage(1);
               }}
-              placeholder="Cari berdasarkan kode (TX-...), nama pelanggan, produk..."
-              className="w-full pl-10 pr-4 py-2 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500 bg-slate-50/50"
+              placeholder="Cari nomor nota (TX-...), nama pelanggan, atau varian rasa..."
+              className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-[#EAE2D5] text-sm text-espresso-900 placeholder:text-espresso-600 focus:outline-none focus:ring-2 focus:ring-bischeese-500/20 focus:border-bischeese-500 bg-cream-50/50"
             />
           </div>
 
           {/* Export CSV Button */}
           <button
             onClick={handleExportCSV}
-            className="flex items-center justify-center gap-2 px-4 py-2 rounded-xl border border-slate-200 bg-white hover:bg-slate-50 text-slate-700 font-semibold text-xs sm:text-sm shadow-sm transition-colors"
+            className="flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl border border-bischeese-300 bg-cream-50 hover:bg-cream-100 text-bischeese-800 font-serif font-bold text-xs sm:text-sm shadow-xs transition-colors"
           >
-            <Download size={16} />
+            <FileSpreadsheet size={16} />
             <span>Ekspor ke Excel / CSV</span>
           </button>
         </div>
 
         {/* Filter Pills */}
-        <div className="flex flex-wrap items-center gap-2 pt-2 border-t border-slate-100 text-xs">
-          <span className="text-slate-400 font-medium flex items-center gap-1 mr-1">
-            <Filter size={14} /> Filter:
+        <div className="flex flex-wrap items-center gap-2 pt-3 border-t border-[#F5EFE6] text-xs">
+          <span className="text-espresso-700 font-semibold flex items-center gap-1 mr-1">
+            <Filter size={14} className="text-bischeese-600" /> Saring:
           </span>
 
           {/* Product Select */}
@@ -171,9 +173,9 @@ export default function TransactionsView({ transactions, onDeleteTransaction }) 
               setSelectedProduct(e.target.value);
               setCurrentPage(1);
             }}
-            className="px-3 py-1.5 rounded-lg border border-slate-200 bg-slate-50 font-medium text-slate-700 focus:outline-none focus:border-brand-500"
+            className="px-3 py-1.5 rounded-xl border border-[#EAE2D5] bg-cream-50/70 font-medium text-espresso-800 focus:outline-none focus:border-bischeese-500"
           >
-            <option value="ALL">Semua Produk</option>
+            <option value="ALL">Semua Menu Produk</option>
             {productsList.map(p => (
               <option key={p} value={p}>{p}</option>
             ))}
@@ -186,7 +188,7 @@ export default function TransactionsView({ transactions, onDeleteTransaction }) 
               setSelectedChannel(e.target.value);
               setCurrentPage(1);
             }}
-            className="px-3 py-1.5 rounded-lg border border-slate-200 bg-slate-50 font-medium text-slate-700 focus:outline-none focus:border-brand-500"
+            className="px-3 py-1.5 rounded-xl border border-[#EAE2D5] bg-cream-50/70 font-medium text-espresso-800 focus:outline-none focus:border-bischeese-500"
           >
             {channelsList.map(ch => (
               <option key={ch.id} value={ch.id}>{ch.label}</option>
@@ -196,7 +198,7 @@ export default function TransactionsView({ transactions, onDeleteTransaction }) 
           {/* Sort Order */}
           <button
             onClick={() => setSortOrder(sortOrder === 'DESC' ? 'ASC' : 'DESC')}
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-slate-200 bg-slate-50 hover:bg-slate-100 font-medium text-slate-700 transition-colors ml-auto"
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-[#EAE2D5] bg-cream-50 hover:bg-cream-100 font-medium text-espresso-800 transition-colors ml-auto"
           >
             <ArrowUpDown size={14} />
             <span>{sortOrder === 'DESC' ? 'Terbaru Dahulu' : 'Terlama Dahulu'}</span>
@@ -204,68 +206,68 @@ export default function TransactionsView({ transactions, onDeleteTransaction }) 
         </div>
 
         {/* Dynamic Summary Strip */}
-        <div className="flex flex-wrap items-center gap-4 text-xs font-semibold text-slate-600 bg-slate-50/70 p-3 rounded-xl border border-slate-100">
-          <span>Menampilkan: <strong className="text-slate-900">{filterStats.count}</strong> transaksi</span>
-          <span className="text-slate-300">|</span>
-          <span>Total Terjual: <strong className="text-slate-900">{filterStats.qty}</strong> pcs</span>
-          <span className="text-slate-300">|</span>
-          <span>Total Omset Filter: <strong className="text-brand-700">{formatIDR(filterStats.rev)}</strong></span>
+        <div className="flex flex-wrap items-center gap-4 text-xs font-semibold text-espresso-700 bg-cream-100/60 p-3 rounded-xl border border-cream-200/80">
+          <span>Menampilkan: <strong className="text-espresso-900 font-serif">{filterStats.count}</strong> transaksi</span>
+          <span className="text-cream-300">|</span>
+          <span>Total Terjual: <strong className="text-espresso-900 font-serif">{filterStats.qty}</strong> pcs</span>
+          <span className="text-cream-300">|</span>
+          <span>Total Omset Filter: <strong className="text-bischeese-700 font-serif font-bold text-sm">{formatIDR(filterStats.rev)}</strong></span>
         </div>
       </div>
 
       {/* Transactions Data Table */}
-      <div className="bg-white rounded-2xl border border-slate-200/80 shadow-sm overflow-hidden">
+      <div className="bg-white rounded-2xl border border-[#EAE2D5] shadow-sm overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full text-left text-xs">
-            <thead className="bg-slate-50 border-b border-slate-200/80 text-[11px] font-bold text-slate-400 uppercase tracking-wider">
+            <thead className="bg-[#FAF7F2] border-b border-[#EAE2D5] text-[11px] font-serif font-bold text-espresso-800 uppercase tracking-wider">
               <tr>
-                <th className="py-3.5 px-4">Kode Transaksi</th>
+                <th className="py-3.5 px-4">Kode Nota</th>
                 <th className="py-3.5 px-4">Tanggal</th>
                 <th className="py-3.5 px-4">Pelanggan / Kanal</th>
-                <th className="py-3.5 px-4">Menu Produk</th>
+                <th className="py-3.5 px-4">Menu Varian</th>
                 <th className="py-3.5 px-4 text-right">Jumlah</th>
                 <th className="py-3.5 px-4 text-right">Harga Satuan</th>
                 <th className="py-3.5 px-4 text-right">Total</th>
                 <th className="py-3.5 px-4 text-center">Aksi</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-slate-100">
+            <tbody className="divide-y divide-[#F5EFE6]">
               {paginatedRows.length === 0 ? (
                 <tr>
-                  <td colSpan={8} className="py-12 text-center text-slate-400 font-medium">
-                    Tidak ada data transaksi yang cocok dengan filter atau pencarian Anda.
+                  <td colSpan={8} className="py-12 text-center text-espresso-600 font-medium">
+                    Tidak ada riwayat transaksi yang cocok dengan filter atau pencarian Anda.
                   </td>
                 </tr>
               ) : (
                 paginatedRows.map((t) => (
-                  <tr key={t.id || t.code} className="hover:bg-slate-50/60 transition-colors">
-                    <td className="py-3 px-4 font-bold text-brand-600 whitespace-nowrap">
+                  <tr key={t.id || t.code} className="hover:bg-[#FAF7F2]/80 transition-colors">
+                    <td className="py-3.5 px-4 font-bold text-bischeese-700 whitespace-nowrap">
                       {t.code}
                     </td>
-                    <td className="py-3 px-4 text-slate-600 whitespace-nowrap">
+                    <td className="py-3.5 px-4 text-espresso-700 whitespace-nowrap">
                       {t.transaction_date}
                     </td>
-                    <td className="py-3 px-4 font-semibold text-slate-900">
+                    <td className="py-3.5 px-4 font-semibold text-espresso-900">
                       {t.customer_name}
                     </td>
-                    <td className="py-3 px-4 text-slate-800">
-                      <span className="px-2 py-0.5 rounded-md bg-slate-100 font-medium text-slate-700">
+                    <td className="py-3.5 px-4 text-espresso-800">
+                      <span className="px-2.5 py-1 rounded-lg bg-cream-100/90 border border-cream-200 text-espresso-900 font-medium text-[11px]">
                         {t.product_name}
                       </span>
                     </td>
-                    <td className="py-3 px-4 text-right font-semibold text-slate-800">
+                    <td className="py-3.5 px-4 text-right font-semibold text-espresso-900">
                       {t.quantity} pcs
                     </td>
-                    <td className="py-3 px-4 text-right text-slate-600">
+                    <td className="py-3.5 px-4 text-right text-espresso-700">
                       {formatIDR(t.unit_price)}
                     </td>
-                    <td className="py-3 px-4 text-right font-bold text-slate-900">
+                    <td className="py-3.5 px-4 text-right font-serif font-bold text-espresso-900 text-sm">
                       {formatIDR(t.total_price)}
                     </td>
-                    <td className="py-3 px-4 text-center">
+                    <td className="py-3.5 px-4 text-center">
                       <button
                         onClick={() => setDeleteModalTx(t)}
-                        className="p-1.5 rounded-lg text-slate-400 hover:text-rose-600 hover:bg-rose-50 transition-colors"
+                        className="p-1.5 rounded-lg text-espresso-600 hover:text-rose-600 hover:bg-rose-50 transition-colors"
                         title="Hapus Transaksi"
                       >
                         <Trash2 size={15} />
@@ -279,26 +281,28 @@ export default function TransactionsView({ transactions, onDeleteTransaction }) 
         </div>
 
         {/* Pagination Controls */}
-        <div className="p-4 border-t border-slate-100 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-slate-500">
+        <div className="p-4 border-t border-[#F5EFE6] flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-espresso-600 bg-[#FAF7F2]/50">
           <div>
-            Halaman <span className="font-bold text-slate-800">{currentPage}</span> dari <span className="font-bold text-slate-800">{totalPages}</span> ({filteredTransactions.length} baris)
+            Halaman <span className="font-bold text-espresso-900">{currentPage}</span> dari <span className="font-bold text-espresso-900">{totalPages}</span> ({filteredTransactions.length} baris riwayat)
           </div>
 
           <div className="flex items-center gap-2">
             <button
               onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
               disabled={currentPage <= 1}
-              className="p-1.5 rounded-lg border border-slate-200 text-slate-600 hover:bg-slate-50 disabled:opacity-30"
+              className="p-1.5 rounded-lg border border-[#EAE2D5] bg-white text-espresso-700 hover:bg-cream-100 disabled:opacity-30 transition-all"
+              aria-label="Halaman sebelumnya"
             >
               <ChevronLeft size={16} />
             </button>
-            <span className="px-2 font-semibold text-slate-700">
+            <span className="px-2 font-semibold text-espresso-800 font-serif">
               {currentPage} / {totalPages}
             </span>
             <button
               onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
               disabled={currentPage >= totalPages}
-              className="p-1.5 rounded-lg border border-slate-200 text-slate-600 hover:bg-slate-50 disabled:opacity-30"
+              className="p-1.5 rounded-lg border border-[#EAE2D5] bg-white text-espresso-700 hover:bg-cream-100 disabled:opacity-30 transition-all"
+              aria-label="Halaman berikutnya"
             >
               <ChevronRight size={16} />
             </button>
@@ -308,31 +312,31 @@ export default function TransactionsView({ transactions, onDeleteTransaction }) 
 
       {/* Delete Confirmation Modal */}
       {deleteModalTx && (
-        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-          <div className="bg-white max-w-md w-full rounded-2xl p-6 shadow-2xl space-y-4 animate-scale-up">
+        <div className="fixed inset-0 bg-espresso-950/70 backdrop-blur-xs z-50 flex items-center justify-center p-4">
+          <div className="bg-white max-w-md w-full rounded-2xl p-6 shadow-2xl space-y-4 animate-scale-up border border-[#EAE2D5]">
             <div className="w-12 h-12 rounded-full bg-rose-100 text-rose-600 flex items-center justify-center">
               <AlertTriangle size={24} />
             </div>
             <div>
-              <h3 className="font-bold text-lg text-slate-900 font-['Outfit']">
+              <h3 className="font-serif font-bold text-lg text-espresso-900">
                 Konfirmasi Hapus Transaksi
               </h3>
-              <p className="text-xs text-slate-500 mt-1">
-                Apakah Anda yakin ingin menghapus data transaksi <strong>{deleteModalTx.code}</strong> ({deleteModalTx.customer_name} - {formatIDR(deleteModalTx.total_price)})? Tindakan ini tidak dapat dibatalkan.
+              <p className="text-xs text-espresso-600 mt-1 leading-relaxed">
+                Apakah Anda yakin ingin menghapus data transaksi <strong>{deleteModalTx.code}</strong> ({deleteModalTx.customer_name} - {formatIDR(deleteModalTx.total_price)})? Data akan dihapus dari Supabase dan tidak dapat dipulihkan.
               </p>
             </div>
             <div className="flex items-center justify-end gap-3 pt-2">
               <button
                 type="button"
                 onClick={() => setDeleteModalTx(null)}
-                className="px-4 py-2 rounded-xl border border-slate-200 text-slate-700 font-semibold text-xs hover:bg-slate-50"
+                className="px-4 py-2 rounded-xl border border-[#EAE2D5] text-espresso-700 font-semibold text-xs hover:bg-cream-50"
               >
                 Batal
               </button>
               <button
                 type="button"
                 onClick={confirmDelete}
-                className="px-4 py-2 rounded-xl bg-rose-600 hover:bg-rose-700 text-white font-bold text-xs shadow-md shadow-rose-600/20"
+                className="px-4 py-2 rounded-xl bg-rose-600 hover:bg-rose-700 text-white font-bold text-xs shadow-md shadow-rose-600/20 transition-colors"
               >
                 Ya, Hapus Data
               </button>

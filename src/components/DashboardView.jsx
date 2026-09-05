@@ -1,15 +1,13 @@
 import React, { useMemo } from 'react';
 import { 
-  DollarSign, 
+  TrendingUp, 
   Package, 
   ShoppingCart, 
-  TrendingUp, 
-  Users, 
-  ArrowUpRight, 
-  Sparkles,
-  Calendar,
+  ChevronRight,
   Store,
-  ChevronRight
+  Sparkles,
+  Heart,
+  ArrowUpRight
 } from 'lucide-react';
 import {
   Chart as ChartJS,
@@ -40,7 +38,7 @@ ChartJS.register(
 );
 
 export default function DashboardView({ transactions, products, setActiveTab }) {
-  // 1. Calculate Core Metrics
+  // 1. Core Metrics
   const metrics = useMemo(() => {
     let totalRevenue = 0;
     let totalQty = 0;
@@ -53,24 +51,18 @@ export default function DashboardView({ transactions, products, setActiveTab }) 
 
     const aov = txCount > 0 ? Math.round(totalRevenue / txCount) : 0;
 
-    return {
-      totalRevenue,
-      totalQty,
-      txCount,
-      aov
-    };
+    return { totalRevenue, totalQty, txCount, aov };
   }, [transactions]);
 
-  // 2. Format Currency
   const formatIDR = (val) => {
     return new Intl.NumberFormat('id-ID', {
       style: 'currency',
       currency: 'IDR',
       maximumFractionDigits: 0
-    }).format(val);
+    }).format(val || 0);
   };
 
-  // 3. Monthly Sales Aggregation
+  // 2. Monthly Trend Data
   const monthlyData = useMemo(() => {
     const months = {};
     const monthOrder = [
@@ -79,15 +71,15 @@ export default function DashboardView({ transactions, products, setActiveTab }) 
     ];
 
     const monthNames = {
-      '2025-11': 'Nov 2025',
-      '2025-12': 'Des 2025',
-      '2026-01': 'Jan 2026',
-      '2026-02': 'Feb 2026',
-      '2026-03': 'Mar 2026',
-      '2026-04': 'Apr 2026',
-      '2026-05': 'Mei 2026',
-      '2026-06': 'Jun 2026',
-      '2026-07': 'Jul 2026'
+      '2025-11': 'Nov 25',
+      '2025-12': 'Des 25',
+      '2026-01': 'Jan 26',
+      '2026-02': 'Feb 26',
+      '2026-03': 'Mar 26',
+      '2026-04': 'Apr 26',
+      '2026-05': 'Mei 26',
+      '2026-06': 'Jun 26',
+      '2026-07': 'Jul 26'
     };
 
     monthOrder.forEach(m => {
@@ -111,28 +103,25 @@ export default function DashboardView({ transactions, products, setActiveTab }) 
     };
   }, [transactions]);
 
-  // 4. Product Sales Distribution (Donut)
+  // 3. Product Share
   const productData = useMemo(() => {
     const counts = {};
     transactions.forEach(t => {
-      const p = t.product_name || 'Lainnya';
+      const p = t.product_name || 'Dessert Box';
       counts[p] = (counts[p] || 0) + (Number(t.quantity) || 0);
     });
 
     const labels = Object.keys(counts);
     const data = Object.values(counts);
 
-    return {
-      labels,
-      data
-    };
+    return { labels, data };
   }, [transactions]);
 
-  // 5. Channel Breakdown (Bazar, Reseller, Pesantren, etc.)
+  // 4. Channel Breakdown
   const channelBreakdown = useMemo(() => {
     const channels = {};
     transactions.forEach(t => {
-      let ch = 'Umum';
+      let ch = 'Pre-Order Umum';
       const name = (t.customer_name || '').toLowerCase();
       if (name.includes('bazar')) ch = 'Bazar Pagi';
       else if (name.includes('pesantren')) ch = 'Pesantren';
@@ -153,19 +142,18 @@ export default function DashboardView({ transactions, products, setActiveTab }) 
       .sort((a, b) => b.revenue - a.revenue);
   }, [transactions]);
 
-  // Bar Chart Config
+  // Bar Chart Configuration in Warm Caramel Palette
   const barChartConfig = {
     data: {
       labels: monthlyData.labels,
       datasets: [
         {
-          label: 'Total Penjualan (Rp)',
+          label: 'Omset Penjualan (Rp)',
           data: monthlyData.revenues,
-          backgroundColor: 'rgba(213, 96, 117, 0.85)',
-          hoverBackgroundColor: 'rgba(190, 68, 91, 1)',
+          backgroundColor: '#B47640',
+          hoverBackgroundColor: '#8F5826',
           borderRadius: 8,
-          borderSkipped: false,
-          yAxisID: 'y'
+          borderSkipped: false
         }
       ]
     },
@@ -175,8 +163,8 @@ export default function DashboardView({ transactions, products, setActiveTab }) 
       plugins: {
         legend: { display: false },
         tooltip: {
-          backgroundColor: '#0f172a',
-          titleFont: { size: 13, family: 'Inter' },
+          backgroundColor: '#2B1E16',
+          titleFont: { size: 12, family: 'Inter' },
           bodyFont: { size: 12, family: 'Inter' },
           padding: 12,
           cornerRadius: 8,
@@ -188,12 +176,13 @@ export default function DashboardView({ transactions, products, setActiveTab }) 
       scales: {
         x: {
           grid: { display: false },
-          ticks: { font: { size: 11 } }
+          ticks: { font: { size: 11 }, color: '#7D6B5D' }
         },
         y: {
-          grid: { color: '#f1f5f9' },
+          grid: { color: '#EFE8DE' },
           ticks: {
             font: { size: 10 },
+            color: '#7D6B5D',
             callback: (v) => 'Rp ' + (v >= 1000000 ? (v / 1000000).toFixed(1) + 'M' : (v / 1000) + 'k')
           }
         }
@@ -201,7 +190,7 @@ export default function DashboardView({ transactions, products, setActiveTab }) 
     }
   };
 
-  // Donut Chart Config
+  // Donut Chart in Bischeese Palette
   const doughnutConfig = {
     data: {
       labels: productData.labels,
@@ -209,14 +198,14 @@ export default function DashboardView({ transactions, products, setActiveTab }) 
         {
           data: productData.data,
           backgroundColor: [
-            '#d56075', // Brand Rose
-            '#3b82f6', // Blue
-            '#f59e0b', // Amber
-            '#10b981', // Emerald
-            '#8b5cf6'  // Purple
+            '#B47640', // Caramel Bischeese
+            '#D97706', // Lotus Biscoff
+            '#65A30D', // Matcha
+            '#78350F', // Tiramisu
+            '#3D2B1F'  // Dark chocolate
           ],
           borderWidth: 2,
-          borderColor: '#ffffff'
+          borderColor: '#FFFFFF'
         }
       ]
     },
@@ -227,116 +216,143 @@ export default function DashboardView({ transactions, products, setActiveTab }) 
         legend: {
           position: 'bottom',
           labels: {
-            boxWidth: 12,
+            boxWidth: 10,
             padding: 14,
-            font: { size: 11, family: 'Inter' }
+            font: { size: 11, family: 'Inter' },
+            color: '#4A3525'
           }
         },
         tooltip: {
           callbacks: {
-            label: (ctx) => ` ${ctx.label}: ${ctx.parsed} pcs`
+            label: (ctx) => ` ${ctx.label}: ${ctx.parsed} box terjual`
           }
         }
       },
-      cutout: '68%'
+      cutout: '72%'
     }
   };
 
   return (
-    <div className="space-y-6">
-      {/* KPI Cards Grid */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4 sm:gap-6">
-        {/* Total Omset */}
-        <div className="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-sm hover:shadow-md transition-shadow relative overflow-hidden group">
-          <div className="flex items-center justify-between">
-            <span className="text-xs font-bold text-slate-400 uppercase tracking-wider">Total Omset</span>
-            <div className="w-10 h-10 rounded-xl bg-brand-50 text-brand-600 flex items-center justify-center group-hover:scale-110 transition-transform">
-              <DollarSign size={20} />
-            </div>
+    <div className="space-y-7">
+      {/* Brand Aesthetic Hero Banner */}
+      <div className="p-6 sm:p-8 rounded-3xl bg-gradient-to-r from-[#FAF5EE] via-[#F4ECE1] to-[#EAE2D5] border border-[#DECDB9] relative overflow-hidden shadow-sm">
+        <div className="max-w-2xl relative z-10 space-y-2">
+          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/80 border border-[#DECDB9] text-xs font-serif font-bold text-[#7E4C23]">
+            <Sparkles size={13} className="text-[#B47640]" />
+            <span>Artisan Dessert & Pastry House</span>
           </div>
-          <div className="mt-3">
-            <h3 className="text-2xl font-black text-slate-900 font-['Outfit']">
-              {formatIDR(metrics.totalRevenue)}
-            </h3>
-            <p className="text-xs text-emerald-600 font-semibold mt-1 flex items-center gap-1">
-              <TrendingUp size={14} />
-              <span>Rekap Penjualan Historis</span>
-            </p>
-          </div>
-          <div className="absolute -bottom-2 -right-2 w-16 h-16 bg-brand-50/50 rounded-full blur-xl pointer-events-none" />
+          <h2 className="text-2xl sm:text-3xl font-serif font-black text-[#3D2B1F] tracking-tight">
+            Bischeese Management Dashboard
+          </h2>
+          <p className="text-xs sm:text-sm text-[#7D6B5D] font-medium leading-relaxed">
+            "Soft, creamy, and layered with love. A blissful taste in every bite." Pantau seluruh perputaran pesanan, omset bazar, reseller, dan transaksi pelanggan dalam satu tempat.
+          </p>
         </div>
 
-        {/* Total Terjual */}
-        <div className="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-sm hover:shadow-md transition-shadow relative overflow-hidden group">
-          <div className="flex items-center justify-between">
-            <span className="text-xs font-bold text-slate-400 uppercase tracking-wider">Produk Terjual</span>
-            <div className="w-10 h-10 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center group-hover:scale-110 transition-transform">
-              <Package size={20} />
-            </div>
-          </div>
-          <div className="mt-3">
-            <h3 className="text-2xl font-black text-slate-900 font-['Outfit']">
-              {metrics.totalQty.toLocaleString('id-ID')} <span className="text-sm font-semibold text-slate-500">pcs</span>
-            </h3>
-            <p className="text-xs text-slate-500 font-medium mt-1">
-              Dessert Box & Cheesecake
-            </p>
-          </div>
-          <div className="absolute -bottom-2 -right-2 w-16 h-16 bg-blue-50/50 rounded-full blur-xl pointer-events-none" />
-        </div>
-
-        {/* Total Transaksi */}
-        <div className="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-sm hover:shadow-md transition-shadow relative overflow-hidden group">
-          <div className="flex items-center justify-between">
-            <span className="text-xs font-bold text-slate-400 uppercase tracking-wider">Total Transaksi</span>
-            <div className="w-10 h-10 rounded-xl bg-amber-50 text-amber-600 flex items-center justify-center group-hover:scale-110 transition-transform">
-              <ShoppingCart size={20} />
-            </div>
-          </div>
-          <div className="mt-3">
-            <h3 className="text-2xl font-black text-slate-900 font-['Outfit']">
-              {metrics.txCount} <span className="text-sm font-semibold text-slate-500">transaksi</span>
-            </h3>
-            <p className="text-xs text-slate-500 font-medium mt-1">
-              Terdata dari TX-001 ke atas
-            </p>
-          </div>
-          <div className="absolute -bottom-2 -right-2 w-16 h-16 bg-amber-50/50 rounded-full blur-xl pointer-events-none" />
-        </div>
-
-        {/* Rata-Rata Penjualan */}
-        <div className="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-sm hover:shadow-md transition-shadow relative overflow-hidden group">
-          <div className="flex items-center justify-between">
-            <span className="text-xs font-bold text-slate-400 uppercase tracking-wider">Rata-rata Order</span>
-            <div className="w-10 h-10 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center group-hover:scale-110 transition-transform">
-              <TrendingUp size={20} />
-            </div>
-          </div>
-          <div className="mt-3">
-            <h3 className="text-2xl font-black text-slate-900 font-['Outfit']">
-              {formatIDR(metrics.aov)}
-            </h3>
-            <p className="text-xs text-slate-500 font-medium mt-1">
-              Nilai per transaksi (AOV)
-            </p>
-          </div>
-          <div className="absolute -bottom-2 -right-2 w-16 h-16 bg-emerald-50/50 rounded-full blur-xl pointer-events-none" />
+        <div className="mt-4 pt-4 border-t border-[#DECDB9]/60 flex flex-wrap items-center gap-3 sm:gap-6 text-xs text-[#645447]">
+          <span className="flex items-center gap-1.5 font-medium">
+            <span className="w-2 h-2 rounded-full bg-[#B47640]"></span>
+            7 Varian Rasa Bischeese
+          </span>
+          <span className="flex items-center gap-1.5 font-medium">
+            <span className="w-2 h-2 rounded-full bg-[#78350F]"></span>
+            Kemitraan Reseller Aktif
+          </span>
+          <span className="flex items-center gap-1.5 font-medium">
+            <span className="w-2 h-2 rounded-full bg-emerald-600"></span>
+            Database Cloud Terhubung
+          </span>
         </div>
       </div>
 
-      {/* Charts Grid */}
+      {/* 4 Core KPI Cards */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4 sm:gap-5">
+        {/* Total Omset */}
+        <div className="bg-white p-5 rounded-2xl border border-[#EAE2D5] shadow-sm hover:shadow-md transition-all group">
+          <div className="flex items-center justify-between">
+            <span className="text-[11px] font-bold tracking-wider text-[#9B8B7B] uppercase">Total Omset</span>
+            <div className="w-9 h-9 rounded-xl bg-[#FAF5EE] text-[#B47640] flex items-center justify-center group-hover:scale-105 transition-transform border border-[#EAE2D5]">
+              <TrendingUp size={18} />
+            </div>
+          </div>
+          <div className="mt-3">
+            <h3 className="text-2xl font-serif font-black text-[#3D2B1F]">
+              {formatIDR(metrics.totalRevenue)}
+            </h3>
+            <p className="text-[11px] text-[#7D6B5D] font-medium mt-1">
+              Rekapitulasi penjualan terverifikasi
+            </p>
+          </div>
+        </div>
+
+        {/* Total Terjual */}
+        <div className="bg-white p-5 rounded-2xl border border-[#EAE2D5] shadow-sm hover:shadow-md transition-all group">
+          <div className="flex items-center justify-between">
+            <span className="text-[11px] font-bold tracking-wider text-[#9B8B7B] uppercase">Total Terjual</span>
+            <div className="w-9 h-9 rounded-xl bg-[#FAF5EE] text-[#78350F] flex items-center justify-center group-hover:scale-105 transition-transform border border-[#EAE2D5]">
+              <Package size={18} />
+            </div>
+          </div>
+          <div className="mt-3">
+            <h3 className="text-2xl font-serif font-black text-[#3D2B1F]">
+              {metrics.totalQty.toLocaleString('id-ID')} <span className="text-xs font-sans font-semibold text-[#8C7A6B]">box</span>
+            </h3>
+            <p className="text-[11px] text-[#7D6B5D] font-medium mt-1">
+              Varian Bischeese & Cheesecake
+            </p>
+          </div>
+        </div>
+
+        {/* Total Transaksi */}
+        <div className="bg-white p-5 rounded-2xl border border-[#EAE2D5] shadow-sm hover:shadow-md transition-all group">
+          <div className="flex items-center justify-between">
+            <span className="text-[11px] font-bold tracking-wider text-[#9B8B7B] uppercase">Total Transaksi</span>
+            <div className="w-9 h-9 rounded-xl bg-[#FAF5EE] text-[#9A5F2D] flex items-center justify-center group-hover:scale-105 transition-transform border border-[#EAE2D5]">
+              <ShoppingCart size={18} />
+            </div>
+          </div>
+          <div className="mt-3">
+            <h3 className="text-2xl font-serif font-black text-[#3D2B1F]">
+              {metrics.txCount} <span className="text-xs font-sans font-semibold text-[#8C7A6B]">pesanan</span>
+            </h3>
+            <p className="text-[11px] text-[#7D6B5D] font-medium mt-1">
+              Terdata dari TX-001 ke atas
+            </p>
+          </div>
+        </div>
+
+        {/* Rata-Rata Order */}
+        <div className="bg-white p-5 rounded-2xl border border-[#EAE2D5] shadow-sm hover:shadow-md transition-all group">
+          <div className="flex items-center justify-between">
+            <span className="text-[11px] font-bold tracking-wider text-[#9B8B7B] uppercase">Rata-Rata Order</span>
+            <div className="w-9 h-9 rounded-xl bg-[#FAF5EE] text-[#B47640] flex items-center justify-center group-hover:scale-105 transition-transform border border-[#EAE2D5]">
+              <Sparkles size={18} />
+            </div>
+          </div>
+          <div className="mt-3">
+            <h3 className="text-2xl font-serif font-black text-[#3D2B1F]">
+              {formatIDR(metrics.aov)}
+            </h3>
+            <p className="text-[11px] text-[#7D6B5D] font-medium mt-1">
+              Rata-rata belanja per transaksi (AOV)
+            </p>
+          </div>
+        </div>
+      </div>
+
+      {/* Visual Analytics Grid */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Trend Penjualan Bulanan (2 cols) */}
-        <div className="lg:col-span-2 bg-white p-6 rounded-2xl border border-slate-200/80 shadow-sm">
-          <div className="flex items-center justify-between mb-4">
+        <div className="lg:col-span-2 bg-white p-6 rounded-2xl border border-[#EAE2D5] shadow-sm">
+          <div className="flex items-center justify-between mb-5">
             <div>
-              <h4 className="font-bold text-base text-slate-900 font-['Outfit']">
-                Grafik Tren Penjualan
+              <h4 className="font-serif font-bold text-lg text-[#3D2B1F]">
+                Grafik Tren Omset Bulanan
               </h4>
-              <p className="text-xs text-slate-500">Omset penjualan per bulan (Nov 2025 - Jul 2026)</p>
+              <p className="text-xs text-[#7D6B5D]">Perjalanan pertumbuhan penjualan dari awal hingga saat ini</p>
             </div>
-            <span className="text-xs font-semibold px-2.5 py-1 bg-brand-50 text-brand-700 rounded-lg">
-              Bulanan
+            <span className="text-xs font-semibold px-2.5 py-1 bg-[#FAF5EE] text-[#7E4C23] border border-[#DECDB9] rounded-lg">
+              Nov 2025 — Jul 2026
             </span>
           </div>
           <div className="h-72 w-full">
@@ -345,53 +361,53 @@ export default function DashboardView({ transactions, products, setActiveTab }) 
         </div>
 
         {/* Proporsi Produk (1 col) */}
-        <div className="bg-white p-6 rounded-2xl border border-slate-200/80 shadow-sm flex flex-col">
-          <div className="mb-4">
-            <h4 className="font-bold text-base text-slate-900 font-['Outfit']">
-              Proporsi Produk Terjual
+        <div className="bg-white p-6 rounded-2xl border border-[#EAE2D5] shadow-sm flex flex-col justify-between">
+          <div>
+            <h4 className="font-serif font-bold text-lg text-[#3D2B1F]">
+              Proporsi Menu Terjual
             </h4>
-            <p className="text-xs text-slate-500">Persentase perbandingan kuantitas produk</p>
+            <p className="text-xs text-[#7D6B5D]">Perbandingan kuantitas menu terfavorit</p>
           </div>
-          <div className="flex-1 flex items-center justify-center min-h-[240px]">
+          <div className="flex-1 flex items-center justify-center my-4 min-h-[220px]">
             <Doughnut data={doughnutConfig.data} options={doughnutConfig.options} />
           </div>
         </div>
       </div>
 
-      {/* Breakdown Channels & Recent Transactions Grid */}
+      {/* Channels & Recent Transactions */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Channel Breakdown (1 col) */}
-        <div className="bg-white p-6 rounded-2xl border border-slate-200/80 shadow-sm">
+        {/* Kanal Penjualan (1 col) */}
+        <div className="bg-white p-6 rounded-2xl border border-[#EAE2D5] shadow-sm">
           <div className="flex items-center justify-between mb-4">
             <div>
-              <h4 className="font-bold text-base text-slate-900 font-['Outfit']">
+              <h4 className="font-serif font-bold text-lg text-[#3D2B1F]">
                 Kanal Penjualan
               </h4>
-              <p className="text-xs text-slate-500">Peringkat omset per kategori channel</p>
+              <p className="text-xs text-[#7D6B5D]">Peringkat omset per kategori channel</p>
             </div>
-            <Store size={18} className="text-slate-400" />
+            <Store size={18} className="text-[#8C7A6B]" />
           </div>
-          <div className="space-y-3.5">
+          <div className="space-y-3">
             {channelBreakdown.map((ch, idx) => {
               const pct = Math.round((ch.revenue / (metrics.totalRevenue || 1)) * 100);
               return (
-                <div key={ch.name} className="p-3 rounded-xl bg-slate-50 border border-slate-100">
-                  <div className="flex items-center justify-between text-xs font-semibold text-slate-800 mb-1">
-                    <span className="flex items-center gap-1.5">
-                      <span className="w-5 h-5 rounded-full bg-brand-100 text-brand-700 flex items-center justify-center text-[10px]">
+                <div key={ch.name} className="p-3 rounded-xl bg-[#FAF7F2] border border-[#EAE2D5]">
+                  <div className="flex items-center justify-between text-xs font-semibold text-[#3D2B1F] mb-1">
+                    <span className="flex items-center gap-1.5 font-bold">
+                      <span className="w-5 h-5 rounded-full bg-[#EAE2D5] text-[#4A3525] flex items-center justify-center text-[10px] font-serif">
                         {idx + 1}
                       </span>
                       {ch.name}
                     </span>
-                    <span className="font-bold text-slate-900">{formatIDR(ch.revenue)}</span>
+                    <span className="font-bold text-[#7E4C23] font-serif">{formatIDR(ch.revenue)}</span>
                   </div>
-                  <div className="flex items-center justify-between text-[11px] text-slate-400 mb-1.5">
+                  <div className="flex items-center justify-between text-[11px] text-[#8C7A6B] mb-1.5">
                     <span>{ch.count} Transaksi</span>
-                    <span>{ch.qty} pcs ({pct}%)</span>
+                    <span>{ch.qty} box ({pct}%)</span>
                   </div>
-                  <div className="w-full bg-slate-200 h-1.5 rounded-full overflow-hidden">
+                  <div className="w-full bg-[#EAE2D5] h-1.5 rounded-full overflow-hidden">
                     <div 
-                      className="bg-brand-500 h-full rounded-full transition-all duration-500"
+                      className="bg-[#B47640] h-full rounded-full transition-all duration-500"
                       style={{ width: `${pct}%` }}
                     />
                   </div>
@@ -402,52 +418,64 @@ export default function DashboardView({ transactions, products, setActiveTab }) 
         </div>
 
         {/* Transaksi Terbaru (2 cols) */}
-        <div className="lg:col-span-2 bg-white p-6 rounded-2xl border border-slate-200/80 shadow-sm flex flex-col">
-          <div className="flex items-center justify-between mb-4">
-            <div>
-              <h4 className="font-bold text-base text-slate-900 font-['Outfit']">
-                Transaksi Terbaru
-              </h4>
-              <p className="text-xs text-slate-500">5 transaksi terakhir yang tercatat di sistem</p>
+        <div className="lg:col-span-2 bg-white p-6 rounded-2xl border border-[#EAE2D5] shadow-sm flex flex-col justify-between">
+          <div>
+            <div className="flex items-center justify-between mb-4">
+              <div>
+                <h4 className="font-serif font-bold text-lg text-[#3D2B1F]">
+                  Transaksi Terbaru
+                </h4>
+                <p className="text-xs text-[#7D6B5D]">5 transaksi penjualan terakhir di toko</p>
+              </div>
+              <button
+                onClick={() => setActiveTab('transactions')}
+                className="text-xs font-bold text-[#B47640] hover:text-[#9A5F2D] flex items-center gap-1"
+              >
+                <span>Lihat Semua ({transactions.length})</span>
+                <ChevronRight size={14} />
+              </button>
             </div>
-            <button
-              onClick={() => setActiveTab('transactions')}
-              className="text-xs font-semibold text-brand-600 hover:text-brand-700 flex items-center gap-1 hover:underline"
-            >
-              <span>Lihat Semua ({transactions.length})</span>
-              <ChevronRight size={14} />
-            </button>
+
+            <div className="overflow-x-auto">
+              <table className="w-full text-left text-xs">
+                <thead className="text-[10px] uppercase font-bold text-[#9B8B7B] bg-[#FAF7F2] border-y border-[#EAE2D5] tracking-wider">
+                  <tr>
+                    <th className="py-2.5 px-3">Kode</th>
+                    <th className="py-2.5 px-3">Tanggal</th>
+                    <th className="py-2.5 px-3">Pelanggan</th>
+                    <th className="py-2.5 px-3">Menu Produk</th>
+                    <th className="py-2.5 px-3 text-right">Qty</th>
+                    <th className="py-2.5 px-3 text-right">Total</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-[#EAE2D5]">
+                  {transactions.slice(0, 5).map((t) => (
+                    <tr key={t.id || t.code} className="hover:bg-[#FAF7F2]/60 transition-colors">
+                      <td className="py-3 px-3 font-bold text-[#B47640] font-mono">{t.code}</td>
+                      <td className="py-3 px-3 text-[#645447] whitespace-nowrap">{t.transaction_date}</td>
+                      <td className="py-3 px-3 font-semibold text-[#3D2B1F]">{t.customer_name}</td>
+                      <td className="py-3 px-3 text-[#4A3525]">
+                        <span className="px-2 py-0.5 rounded-md bg-[#FAF5EE] border border-[#EAE2D5] font-medium text-[11px]">
+                          {t.product_name}
+                        </span>
+                      </td>
+                      <td className="py-3 px-3 text-right font-semibold text-[#4A3525]">{t.quantity} box</td>
+                      <td className="py-3 px-3 text-right font-bold text-[#7E4C23] font-serif">{formatIDR(t.total_price)}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
           </div>
 
-          <div className="overflow-x-auto flex-1">
-            <table className="w-full text-left text-xs">
-              <thead className="text-[11px] uppercase font-bold text-slate-400 bg-slate-50/80 border-y border-slate-100">
-                <tr>
-                  <th className="py-2.5 px-3">Kode</th>
-                  <th className="py-2.5 px-3">Tanggal</th>
-                  <th className="py-2.5 px-3">Pelanggan</th>
-                  <th className="py-2.5 px-3">Produk</th>
-                  <th className="py-2.5 px-3 text-right">Qty</th>
-                  <th className="py-2.5 px-3 text-right">Total</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-slate-100">
-                {transactions.slice(0, 5).map((t) => (
-                  <tr key={t.id || t.code} className="hover:bg-slate-50/80 transition-colors">
-                    <td className="py-3 px-3 font-bold text-brand-600">{t.code}</td>
-                    <td className="py-3 px-3 text-slate-600 whitespace-nowrap">{t.transaction_date}</td>
-                    <td className="py-3 px-3 font-medium text-slate-900">{t.customer_name}</td>
-                    <td className="py-3 px-3 text-slate-700">
-                      <span className="px-2 py-0.5 rounded-md bg-slate-100 font-medium">
-                        {t.product_name}
-                      </span>
-                    </td>
-                    <td className="py-3 px-3 text-right font-semibold text-slate-800">{t.quantity} pcs</td>
-                    <td className="py-3 px-3 text-right font-bold text-slate-900">{formatIDR(t.total_price)}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
+          <div className="pt-4 border-t border-[#EAE2D5] flex items-center justify-between text-xs text-[#8C7A6B]">
+            <span>Menampilkan 5 aktivitas kasir terkini</span>
+            <button 
+              onClick={() => setActiveTab('pos')}
+              className="font-bold text-[#B47640] hover:underline"
+            >
+              + Catat Pesanan Baru
+            </button>
           </div>
         </div>
       </div>

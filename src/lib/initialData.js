@@ -1,31 +1,76 @@
 export const initialProducts = [
   {
-    id: 'prod-1',
-    name: 'Dessert Box',
-    category: 'Dessert',
+    id: 'prod-mango',
+    name: 'Mango',
+    category: 'Bischeese',
     base_price: 18000,
-    description: 'Dessert box aneka rasa manis & lembut'
+    image: '/flavors/mango.jpg',
+    badge: 'Best Seller',
+    description: 'Bischeese lembut dengan selai dan potongan mangga segar'
   },
   {
-    id: 'prod-2',
-    name: 'Cheesecake',
-    category: 'Cake',
+    id: 'prod-tiramisu',
+    name: 'Tiramisu',
+    category: 'Bischeese',
+    base_price: 18000,
+    image: '/flavors/tiramisu.jpg',
+    badge: 'Favorite',
+    description: 'Perpaduan kopi aromatik, krim keju lumer, dan bubuk kakao'
+  },
+  {
+    id: 'prod-matcha',
+    name: 'Matcha',
+    category: 'Bischeese',
+    base_price: 18000,
+    image: '/flavors/matcha.jpg',
+    description: 'Matcha premium Jepang dengan rasa gurih manis yang seimbang'
+  },
+  {
+    id: 'prod-blueberry',
+    name: 'Blueberry',
+    category: 'Bischeese',
+    base_price: 18000,
+    image: '/flavors/blueberry.jpg',
+    description: 'Krim keju lezat dengan selai blueberry dan buah blueberry asli'
+  },
+  {
+    id: 'prod-strawberry',
+    name: 'Strawberry',
+    category: 'Bischeese',
+    base_price: 18000,
+    image: '/flavors/strawberry.jpg',
+    description: 'Segar dan manis dengan topping buah strawberry'
+  },
+  {
+    id: 'prod-lotus-biscoff',
+    name: 'Lotus Biscoff',
+    category: 'Bischeese',
     base_price: 20000,
-    description: 'Cheesecake lumer dengan keju pilihan'
+    image: '/flavors/lotus-biscoff.jpg',
+    badge: 'Premium',
+    description: 'Krim lotus dengan remahan biskuit karamel & 1 biskuit Lotus utuh'
   },
   {
-    id: 'prod-3',
+    id: 'prod-oreo',
+    name: 'Oreo',
+    category: 'Bischeese',
+    base_price: 18000,
+    image: '/flavors/oreo.jpg',
+    description: 'Krim cheesecake vanilla dengan taburan remahan Oreo lezat'
+  },
+  {
+    id: 'prod-cake-12cm',
     name: 'Cheesecake 12cm',
-    category: 'Cake',
+    category: 'Cheesecake',
     base_price: 40000,
-    description: 'Cheesecake ukuran 12cm untuk acara spesial'
+    description: 'Cheesecake ukuran 12cm untuk perayaan spesial'
   },
   {
-    id: 'prod-4',
+    id: 'prod-cake-custom',
     name: 'Cheesecake Custom',
-    category: 'Cake',
+    category: 'Custom Cake',
     base_price: 40000,
-    description: 'Custom cake request pelanggan'
+    description: 'Custom cake sesuai permintaan khusus pelanggan'
   }
 ];
 
