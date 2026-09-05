@@ -10,26 +10,27 @@ import {
   Printer,
   X,
   Layers,
-  Search
+  Search,
+  CreditCard,
+  Banknote
 } from 'lucide-react';
 import confetti from 'canvas-confetti';
 
 export default function PosView({ products, transactions, onAddTransaction }) {
-  const [selectedCategory, setSelectedCategory] = useState('ALL');
-  const [selectedProduct, setSelectedProduct] = useState(products[0] || null);
-  const [customerName, setCustomerName] = useState('');
+  const [selectedCategory, setSelectedCategory] = useState('Bischeese');
+  const [selectedProduct, setSelectedProduct] = useState(null);
+  const [customerName, setCustomerName] = useState('Bazar Pagi');
+  const [paymentMethod, setPaymentMethod] = useState('Tunai / Cash');
   const [quantity, setQuantity] = useState(1);
-  const [unitPrice, setUnitPrice] = useState(products[0]?.base_price || 18000);
+  const [unitPrice, setUnitPrice] = useState(18000);
   const [isCustomPrice, setIsCustomPrice] = useState(false);
   const [transactionDate, setTransactionDate] = useState(() => {
     return new Date().toISOString().split('T')[0];
   });
-  const [variant, setVariant] = useState('-');
   const [notes, setNotes] = useState('');
   const [loading, setLoading] = useState(false);
   const [successTx, setSuccessTx] = useState(null);
   const [showReceiptModal, setShowReceiptModal] = useState(false);
-  const [searchTerm, setSearchTerm] = useState('');
 
   // Quick customer channels matching historical sales
   const customerPresets = [
@@ -41,10 +42,12 @@ export default function PosView({ products, transactions, onAddTransaction }) {
     { label: 'Lala', tag: 'Mitra' }
   ];
 
-  // Sync selected product if products change
+  // Set default product to first Bischeese item
   useEffect(() => {
     if (!selectedProduct && products.length > 0) {
-      setSelectedProduct(products[0]);
+      const bischeese = products.find(p => p.category === 'Bischeese') || products[0];
+      setSelectedProduct(bischeese);
+      setUnitPrice(bischeese.base_price);
     }
   }, [products, selectedProduct]);
 
@@ -57,11 +60,17 @@ export default function PosView({ products, transactions, onAddTransaction }) {
 
   const totalPrice = (Number(quantity) || 0) * (Number(unitPrice) || 0);
 
+  // Sort products: Bischeese flavors first
+  const sortedProducts = [...products].sort((a, b) => {
+    if (a.category === 'Bischeese' && b.category !== 'Bischeese') return -1;
+    if (b.category === 'Bischeese' && a.category !== 'Bischeese') return 1;
+    return 0;
+  });
+
   // Filtered products list
-  const filteredProducts = products.filter(p => {
-    const matchesCat = selectedCategory === 'ALL' || p.category === selectedCategory;
-    const matchesSearch = !searchTerm || (p.name || '').toLowerCase().includes(searchTerm.toLowerCase());
-    return matchesCat && matchesSearch;
+  const filteredProducts = sortedProducts.filter(p => {
+    if (selectedCategory === 'ALL') return true;
+    return p.category === selectedCategory;
   });
 
   // Generate next code
@@ -89,16 +98,18 @@ export default function PosView({ products, transactions, onAddTransaction }) {
 
     setLoading(true);
 
+    const fullNotes = [notes.trim(), paymentMethod ? `Bayar: ${paymentMethod}` : ''].filter(Boolean).join(' • ');
+
     const newTx = {
       code: nextCode,
       transaction_date: transactionDate,
       customer_name: customerName.trim(),
       product_name: selectedProduct?.name || 'Bischeese',
-      variant: variant.trim() || '-',
+      variant: selectedProduct?.category === 'Bischeese' ? selectedProduct.name : '-',
       quantity: Number(quantity),
       unit_price: Number(unitPrice),
       total_price: Number(totalPrice),
-      notes: notes.trim()
+      notes: fullNotes
     };
 
     try {
@@ -112,7 +123,7 @@ export default function PosView({ products, transactions, onAddTransaction }) {
         origin: { y: 0.6 }
       });
 
-      // Reset form quantity and notes
+      // Reset form
       setQuantity(1);
       setNotes('');
       setIsCustomPrice(false);
@@ -136,7 +147,7 @@ export default function PosView({ products, transactions, onAddTransaction }) {
   };
 
   return (
-    <div className="max-w-6xl mx-auto space-y-6">
+    <div className="max-w-6xl mx-auto space-y-5">
       {/* Top Notice / Success Alert */}
       {successTx && !showReceiptModal && (
         <div className="p-4 rounded-2xl bg-[#F4F9F4] border border-[#C8E6C9] text-[#1B5E20] flex items-start justify-between animate-fade-in shadow-sm">
@@ -156,7 +167,7 @@ export default function PosView({ products, transactions, onAddTransaction }) {
           <div className="flex items-center gap-2">
             <button 
               onClick={() => setShowReceiptModal(true)}
-              className="px-3 py-1.5 rounded-lg bg-[#2E7D32] text-white text-xs font-semibold hover:bg-[#1B5E20] transition-colors"
+              className="px-3.5 py-1.5 rounded-lg bg-[#2E7D32] text-white text-xs font-semibold hover:bg-[#1B5E20] transition-colors"
             >
               Lihat Struk
             </button>
@@ -170,41 +181,85 @@ export default function PosView({ products, transactions, onAddTransaction }) {
         </div>
       )}
 
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
-        {/* Left Column: Product Selection & Customer Setup (7 cols) */}
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 items-start">
+        {/* Left Column: Ordering Flow (7 cols) */}
         <div className="lg:col-span-7 space-y-5">
           
-          {/* Section 1: Catalog Selector */}
-          <div className="bg-white p-5 sm:p-6 rounded-2xl border border-[#EAE2D5] shadow-sm space-y-4">
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-[#F5EFE6]">
+          {/* STEP 1: Customer & Channel (Fast Selection) */}
+          <div className="bg-white p-5 rounded-2xl border border-[#EAE2D5] shadow-sm space-y-3.5">
+            <div className="flex items-center justify-between">
               <div>
                 <span className="text-[10px] font-bold uppercase tracking-wider text-bischeese-600 bg-cream-100 px-2 py-0.5 rounded-md">
                   Langkah 1
                 </span>
-                <h3 className="font-serif font-bold text-espresso-900 text-lg mt-1">
-                  Pilih Menu & Varian Rasa
+                <h3 className="font-serif font-bold text-espresso-900 text-base mt-0.5">
+                  Kanal Penjualan / Pelanggan
+                </h3>
+              </div>
+              <span className="text-xs text-espresso-600">Pilih cepat atau ketik</span>
+            </div>
+
+            {/* Quick Channel Chips */}
+            <div className="flex flex-wrap gap-2">
+              {customerPresets.map((preset) => {
+                const isActive = customerName === preset.label;
+                return (
+                  <button
+                    key={preset.label}
+                    type="button"
+                    onClick={() => setCustomerName(preset.label)}
+                    className={`
+                      text-xs px-3 py-1.5 rounded-xl border font-semibold transition-all flex items-center gap-1.5
+                      ${isActive 
+                        ? 'bg-espresso-900 text-white border-espresso-900 shadow-sm' 
+                        : 'bg-cream-50 text-espresso-800 border-[#EAE2D5] hover:bg-[#F5EFE6] hover:border-bischeese-300'}
+                    `}
+                  >
+                    <span>{preset.label}</span>
+                    <span className={`text-[9px] px-1.5 py-0.2 rounded font-bold ${
+                      isActive ? 'bg-white/20 text-cream-100' : 'bg-[#EAE2D5] text-espresso-600'
+                    }`}>
+                      {preset.tag}
+                    </span>
+                  </button>
+                );
+              })}
+            </div>
+
+            {/* Manual Name Input */}
+            <div className="relative">
+              <User size={15} className="absolute left-3.5 top-3 text-espresso-600" />
+              <input
+                type="text"
+                value={customerName}
+                onChange={(e) => setCustomerName(e.target.value)}
+                placeholder="Atau ketik nama pembeli (contoh: Po Reynata, Bu Siti...)"
+                className="w-full pl-9 pr-4 py-2 rounded-xl border border-[#EAE2D5] text-xs sm:text-sm text-espresso-900 placeholder:text-espresso-600 focus:outline-none focus:ring-2 focus:ring-bischeese-500/20 focus:border-bischeese-500 bg-cream-50/40"
+                required
+              />
+            </div>
+          </div>
+
+          {/* STEP 2: Flavor & Product Selection */}
+          <div className="bg-white p-5 sm:p-6 rounded-2xl border border-[#EAE2D5] shadow-sm space-y-4">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-[#F5EFE6]">
+              <div>
+                <span className="text-[10px] font-bold uppercase tracking-wider text-bischeese-600 bg-cream-100 px-2 py-0.5 rounded-md">
+                  Langkah 2
+                </span>
+                <h3 className="font-serif font-bold text-espresso-900 text-lg mt-0.5">
+                  Pilih Varian Rasa Bischeese
                 </h3>
               </div>
 
               {/* Category Filter Tabs */}
-              <div className="flex items-center gap-1.5 p-1 bg-cream-100/70 rounded-xl border border-cream-200/80 text-xs self-start sm:self-auto">
-                <button
-                  type="button"
-                  onClick={() => setSelectedCategory('ALL')}
-                  className={`px-3 py-1.5 rounded-lg font-medium transition-all ${
-                    selectedCategory === 'ALL'
-                      ? 'bg-espresso-900 text-white shadow-sm'
-                      : 'text-espresso-700 hover:text-espresso-900'
-                  }`}
-                >
-                  Semua ({products.length})
-                </button>
+              <div className="flex items-center gap-1 p-1 bg-cream-100/80 rounded-xl border border-cream-200 text-xs self-start sm:self-auto">
                 <button
                   type="button"
                   onClick={() => setSelectedCategory('Bischeese')}
-                  className={`px-3 py-1.5 rounded-lg font-medium transition-all ${
+                  className={`px-3 py-1.5 rounded-lg font-bold transition-all ${
                     selectedCategory === 'Bischeese'
-                      ? 'bg-bischeese-600 text-white shadow-sm'
+                      ? 'bg-bischeese-600 text-white shadow-xs'
                       : 'text-espresso-700 hover:text-espresso-900'
                   }`}
                 >
@@ -215,11 +270,22 @@ export default function PosView({ products, transactions, onAddTransaction }) {
                   onClick={() => setSelectedCategory('Cheesecake')}
                   className={`px-3 py-1.5 rounded-lg font-medium transition-all ${
                     selectedCategory === 'Cheesecake'
-                      ? 'bg-espresso-900 text-white shadow-sm'
+                      ? 'bg-espresso-900 text-white shadow-xs'
                       : 'text-espresso-700 hover:text-espresso-900'
                   }`}
                 >
                   Cake
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setSelectedCategory('ALL')}
+                  className={`px-2.5 py-1.5 rounded-lg font-medium transition-all ${
+                    selectedCategory === 'ALL'
+                      ? 'bg-espresso-900 text-white shadow-xs'
+                      : 'text-espresso-700 hover:text-espresso-900'
+                  }`}
+                >
+                  Semua ({products.length})
                 </button>
               </div>
             </div>
@@ -239,8 +305,8 @@ export default function PosView({ products, transactions, onAddTransaction }) {
                     className={`
                       text-left rounded-2xl border transition-all relative overflow-hidden flex flex-col justify-between group
                       ${isSelected 
-                        ? 'border-bischeese-600 bg-cream-50/80 ring-2 ring-bischeese-500/30 shadow-md scale-[1.01]' 
-                        : 'border-[#EAE2D5] bg-white hover:border-bischeese-300 hover:bg-[#FAF7F2] shadow-sm'}
+                        ? 'border-bischeese-600 bg-cream-50 ring-2 ring-bischeese-500/30 shadow-md scale-[1.01]' 
+                        : 'border-[#EAE2D5] bg-white hover:border-bischeese-300 hover:bg-[#FAF7F2] shadow-xs'}
                     `}
                   >
                     {/* Product Image Thumbnail */}
@@ -254,19 +320,19 @@ export default function PosView({ products, transactions, onAddTransaction }) {
                         />
                       ) : (
                         <div className="w-full h-full flex flex-col items-center justify-center text-bischeese-400 bg-cream-100">
-                          <Layers size={28} />
+                          <Layers size={26} />
                           <span className="text-[10px] font-bold mt-1 text-espresso-600">{p.category}</span>
                         </div>
                       )}
 
-                      {/* Badge if available */}
+                      {/* Badge */}
                       {p.badge && (
-                        <span className="absolute top-2 left-2 text-[9px] font-bold uppercase tracking-wider bg-espresso-900/90 text-cream-100 px-2 py-0.5 rounded-full shadow-sm backdrop-blur-xs">
+                        <span className="absolute top-2 left-2 text-[8px] font-bold uppercase tracking-wider bg-espresso-900/90 text-cream-100 px-2 py-0.5 rounded-full shadow-xs">
                           {p.badge}
                         </span>
                       )}
 
-                      {/* Selected Checkmark Indicator */}
+                      {/* Selected Checkmark */}
                       {isSelected && (
                         <div className="absolute top-2 right-2 w-6 h-6 rounded-full bg-bischeese-600 text-white flex items-center justify-center shadow-md animate-scale-up">
                           <Check size={14} strokeWidth={3} />
@@ -277,18 +343,18 @@ export default function PosView({ products, transactions, onAddTransaction }) {
                     {/* Product Details */}
                     <div className="p-3 flex-1 flex flex-col justify-between">
                       <div>
-                        <span className="text-[10px] font-semibold text-espresso-600 uppercase tracking-wide">
-                          {p.category || 'Menu'}
+                        <span className="text-[9px] font-semibold text-espresso-600 uppercase tracking-wide">
+                          {p.category}
                         </span>
                         <h4 className="font-serif font-bold text-sm text-espresso-900 line-clamp-1 mt-0.5">
                           {p.name}
                         </h4>
                       </div>
-                      <div className="mt-2.5 pt-2 border-t border-[#F5EFE6] flex items-center justify-between">
-                        <span className="font-extrabold text-bischeese-700 text-xs sm:text-sm">
+                      <div className="mt-2 pt-2 border-t border-[#F5EFE6] flex items-center justify-between">
+                        <span className="font-serif font-bold text-bischeese-700 text-xs sm:text-sm">
                           {formatIDR(p.base_price)}
                         </span>
-                        <span className={`text-[10px] px-1.5 py-0.5 rounded font-bold ${
+                        <span className={`text-[10px] px-2 py-0.5 rounded-full font-bold ${
                           isSelected ? 'bg-bischeese-600 text-white' : 'bg-cream-100 text-espresso-700'
                         }`}>
                           {isSelected ? 'Dipilih' : 'Pilih'}
@@ -300,72 +366,19 @@ export default function PosView({ products, transactions, onAddTransaction }) {
               })}
             </div>
           </div>
-
-          {/* Section 2: Customer & Channel Presets */}
-          <div className="bg-white p-5 sm:p-6 rounded-2xl border border-[#EAE2D5] shadow-sm space-y-4">
-            <div className="pb-2 border-b border-[#F5EFE6]">
-              <span className="text-[10px] font-bold uppercase tracking-wider text-bischeese-600 bg-cream-100 px-2 py-0.5 rounded-md">
-                Langkah 2
-              </span>
-              <h3 className="font-serif font-bold text-espresso-900 text-lg mt-1">
-                Kanal Penjualan / Nama Pelanggan
-              </h3>
-              <p className="text-xs text-espresso-600">Pilih kanal penjualan rutin atau ketik nama pembeli manual</p>
-            </div>
-
-            {/* Quick Channel Chips */}
-            <div className="flex flex-wrap gap-2">
-              {customerPresets.map((preset) => {
-                const isActive = customerName === preset.label;
-                return (
-                  <button
-                    key={preset.label}
-                    type="button"
-                    onClick={() => setCustomerName(preset.label)}
-                    className={`
-                      text-xs px-3.5 py-2 rounded-xl border font-semibold transition-all flex items-center gap-1.5
-                      ${isActive 
-                        ? 'bg-espresso-900 text-white border-espresso-900 shadow-sm' 
-                        : 'bg-cream-50 text-espresso-800 border-[#EAE2D5] hover:bg-[#F5EFE6] hover:border-bischeese-300'}
-                    `}
-                  >
-                    <span>{preset.label}</span>
-                    <span className={`text-[10px] px-1.5 py-0.5 rounded-md ${
-                      isActive ? 'bg-white/20 text-cream-100' : 'bg-[#EAE2D5] text-espresso-600'
-                    }`}>
-                      {preset.tag}
-                    </span>
-                  </button>
-                );
-              })}
-            </div>
-
-            {/* Manual Name Input */}
-            <div className="relative">
-              <User size={16} className="absolute left-3.5 top-3.5 text-espresso-600" />
-              <input
-                type="text"
-                value={customerName}
-                onChange={(e) => setCustomerName(e.target.value)}
-                placeholder="Atau ketik nama pembeli manual (contoh: Po Reynata, Bu Siti, Ka Nur...)"
-                className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-[#EAE2D5] text-sm text-espresso-900 placeholder:text-espresso-600 focus:outline-none focus:ring-2 focus:ring-bischeese-500/20 focus:border-bischeese-500 bg-cream-50/50"
-                required
-              />
-            </div>
-          </div>
         </div>
 
-        {/* Right Column: Checkout Summary & Action (5 cols) */}
-        <div className="lg:col-span-5 bg-white p-5 sm:p-6 rounded-2xl border border-[#EAE2D5] shadow-md space-y-5 sticky top-24">
+        {/* Right Column: Checkout Tray (5 cols) */}
+        <div className="lg:col-span-5 bg-white p-5 sm:p-6 rounded-2xl border border-[#EAE2D5] shadow-md space-y-4 sticky top-24">
           <div className="flex items-center justify-between pb-3 border-b border-[#F5EFE6]">
             <div>
               <span className="text-[10px] font-bold uppercase tracking-wider text-bischeese-600 bg-cream-100 px-2 py-0.5 rounded-md">
-                Kasir Bischeese
+                Nota Kasir
               </span>
-              <h3 className="font-serif font-bold text-espresso-900 text-lg mt-1">
-                Rincian Pesanan
+              <h3 className="font-serif font-bold text-espresso-900 text-lg mt-0.5">
+                Rincian Transaksi
               </h3>
-              <p className="text-xs text-espresso-600">Kode Nota: <strong className="text-bischeese-700 font-bold">{nextCode}</strong></p>
+              <p className="text-xs text-espresso-600">Kode: <strong className="text-bischeese-700 font-bold">{nextCode}</strong></p>
             </div>
             <div className="w-10 h-10 rounded-xl bg-cream-100 text-espresso-800 flex items-center justify-center">
               <Receipt size={20} />
@@ -374,7 +387,7 @@ export default function PosView({ products, transactions, onAddTransaction }) {
 
           <form onSubmit={handleSubmit} className="space-y-4">
             
-            {/* Selected Item Summary Card */}
+            {/* Selected Product Card */}
             {selectedProduct && (
               <div className="p-3.5 rounded-xl bg-cream-50/80 border border-[#EAE2D5] flex items-center gap-3">
                 {selectedProduct.image ? (
@@ -389,35 +402,18 @@ export default function PosView({ products, transactions, onAddTransaction }) {
                   </div>
                 )}
                 <div className="flex-1 min-w-0">
-                  <span className="text-[10px] font-semibold text-espresso-600 uppercase">
+                  <span className="text-[9px] font-semibold text-espresso-600 uppercase">
                     {selectedProduct.category}
                   </span>
                   <h5 className="font-serif font-bold text-sm text-espresso-900 truncate">
                     {selectedProduct.name}
                   </h5>
-                  <span className="text-xs font-bold text-bischeese-700">
+                  <span className="text-xs font-serif font-bold text-bischeese-700">
                     {formatIDR(unitPrice)} / pcs
                   </span>
                 </div>
               </div>
             )}
-
-            {/* Tanggal Transaksi */}
-            <div>
-              <label className="block text-xs font-bold text-espresso-800 mb-1.5">
-                Tanggal Penjualan
-              </label>
-              <div className="relative">
-                <Calendar size={16} className="absolute left-3.5 top-3 text-espresso-600" />
-                <input
-                  type="date"
-                  value={transactionDate}
-                  onChange={(e) => setTransactionDate(e.target.value)}
-                  className="w-full pl-10 pr-4 py-2 rounded-xl border border-[#EAE2D5] text-xs sm:text-sm text-espresso-900 focus:outline-none focus:ring-2 focus:ring-bischeese-500/20 focus:border-bischeese-500 bg-cream-50/50"
-                  required
-                />
-              </div>
-            </div>
 
             {/* Quantity Stepper */}
             <div>
@@ -453,7 +449,7 @@ export default function PosView({ products, transactions, onAddTransaction }) {
 
             {/* Unit Price Controls */}
             <div>
-              <div className="flex items-center justify-between mb-1.5">
+              <div className="flex items-center justify-between mb-1">
                 <label className="text-xs font-bold text-espresso-800">
                   Harga Satuan (Rp)
                 </label>
@@ -462,7 +458,7 @@ export default function PosView({ products, transactions, onAddTransaction }) {
                   onClick={() => setIsCustomPrice(!isCustomPrice)}
                   className="text-[11px] font-semibold text-bischeese-700 hover:text-bischeese-800 underline"
                 >
-                  {isCustomPrice ? 'Kembalikan Harga Standar' : 'Ubah Harga Khusus'}
+                  {isCustomPrice ? 'Kembalikan Standar' : 'Ubah Harga Khusus'}
                 </button>
               </div>
               <input
@@ -470,30 +466,61 @@ export default function PosView({ products, transactions, onAddTransaction }) {
                 value={unitPrice}
                 disabled={!isCustomPrice}
                 onChange={(e) => setUnitPrice(Number(e.target.value))}
-                className={`w-full px-4 py-2 rounded-xl border text-sm font-bold ${
+                className={`w-full px-3.5 py-2 rounded-xl border text-sm font-bold ${
                   isCustomPrice 
                     ? 'border-bischeese-500 bg-white text-espresso-900 focus:outline-none focus:ring-2 focus:ring-bischeese-500/20' 
                     : 'border-[#EAE2D5] bg-[#F5EFE6] text-espresso-700 cursor-not-allowed'
                 }`}
               />
               {isCustomPrice && (
-                <p className="text-[11px] text-bischeese-800 font-medium mt-1">
+                <p className="text-[10px] text-bischeese-800 font-medium mt-1">
                   *Mode harga diskon / reseller aktif
                 </p>
               )}
             </div>
 
+            {/* Metode Pembayaran & Tanggal */}
+            <div className="grid grid-cols-2 gap-2 text-xs">
+              <div>
+                <label className="block font-bold text-espresso-800 mb-1">
+                  Tanggal
+                </label>
+                <input
+                  type="date"
+                  value={transactionDate}
+                  onChange={(e) => setTransactionDate(e.target.value)}
+                  className="w-full px-2.5 py-2 rounded-xl border border-[#EAE2D5] text-xs text-espresso-900 focus:outline-none focus:border-bischeese-500 bg-cream-50/50"
+                  required
+                />
+              </div>
+              <div>
+                <label className="block font-bold text-espresso-800 mb-1">
+                  Metode Bayar
+                </label>
+                <select
+                  value={paymentMethod}
+                  onChange={(e) => setPaymentMethod(e.target.value)}
+                  className="w-full px-2.5 py-2 rounded-xl border border-[#EAE2D5] text-xs text-espresso-900 focus:outline-none focus:border-bischeese-500 bg-cream-50/50"
+                >
+                  <option value="Tunai / Cash">Tunai / Cash</option>
+                  <option value="QRIS / Transfer">QRIS / Transfer</option>
+                  <option value="BCA / Mandiri">BCA / Mandiri</option>
+                  <option value="Piutang / DP">Piutang / DP</option>
+                </select>
+              </div>
+            </div>
+
             {/* Notes Field */}
             <div>
-              <label className="block text-xs font-bold text-espresso-800 mb-1.5">
-                Catatan Khusus (Opsional)
+              <label className="block text-xs font-bold text-espresso-800 mb-1">
+                Catatan Transaksi (Opsional)
               </label>
               <input
                 type="text"
                 value={notes}
                 onChange={(e) => setNotes(e.target.value)}
-                placeholder="Contoh: DP 50%, ambil jam 16:00, kartu ucapan..."
-                className="w-full px-3.5 py-2 rounded-xl border border-[#EAE2D5] text-xs sm:text-sm text-espresso-900 focus:outline-none focus:ring-2 focus:ring-bischeese-500/20 focus:border-bischeese-500 bg-cream-50/50"
+                placeholder="Contoh: Titip ke Ka Citra, lunas..."
+                className="w-full px-3.5 py-2 rounded-xl border border-[#EAE2D5] text-xs text-espresso-900 focus:outline-none focus:ring-2 focus:ring-bischeese-500/20 focus:border-bischeese-500 bg-cream-50/50"
               />
             </div>
 
@@ -507,8 +534,8 @@ export default function PosView({ products, transactions, onAddTransaction }) {
                 {formatIDR(totalPrice)}
               </div>
               <div className="text-[11px] text-cream-300 pt-1 border-t border-espresso-800 flex items-center justify-between">
-                <span>Status Pembayaran:</span>
-                <span className="font-semibold text-emerald-400">Lunas / Siap Catat</span>
+                <span>Status & Metode:</span>
+                <span className="font-semibold text-emerald-400">{paymentMethod}</span>
               </div>
             </div>
 
