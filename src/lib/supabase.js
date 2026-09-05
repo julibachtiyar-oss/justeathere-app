@@ -46,11 +46,13 @@ export async function fetchProducts() {
   if (local) {
     try {
       const parsed = JSON.parse(local);
-      const enriched = parsed.map(item => {
-        const found = initialProducts.find(ip => ip.name.toLowerCase() === item.name.toLowerCase());
-        return found ? { ...item, image: found.image, badge: found.badge, description: found.description } : item;
-      });
-      return { data: enriched, source: 'local' };
+      if (Array.isArray(parsed)) {
+        const enriched = parsed.map(item => {
+          const found = initialProducts.find(ip => ip.name.toLowerCase() === (item?.name || '').toLowerCase());
+          return found ? { ...item, image: found.image, badge: found.badge, description: found.description } : item;
+        });
+        return { data: enriched, source: 'local' };
+      }
     } catch (e) {}
   }
   return { data: initialProducts, source: 'seed' };
@@ -74,7 +76,12 @@ export async function fetchTransactions() {
 
   const local = localStorage.getItem('justeathere_transactions');
   if (local) {
-    return { data: JSON.parse(local), source: 'local' };
+    try {
+      const parsed = JSON.parse(local);
+      if (Array.isArray(parsed)) {
+        return { data: parsed, source: 'local' };
+      }
+    } catch (e) {}
   }
   return { data: initialTransactions, source: 'seed' };
 }
