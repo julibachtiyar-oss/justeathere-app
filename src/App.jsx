@@ -80,9 +80,7 @@ export default function App() {
         setTransactions(tRes.data);
       }
 
-      if (conn.connected) {
-        showToast('Tersambung ke Supabase Cloud Database', 'success');
-      }
+      // Silent connection without technical toast
     } catch (err) {
       console.error('Error loading data:', err);
     } finally {
@@ -137,7 +135,7 @@ export default function App() {
         setActiveTab={setActiveTab}
         mobileOpen={mobileOpen}
         setMobileOpen={setMobileOpen}
-        dbStatus={dbStatus}
+        
         onInstallApp={handleInstallApp}
       />
 
@@ -147,7 +145,7 @@ export default function App() {
           activeTab={activeTab}
           setActiveTab={setActiveTab}
           setMobileOpen={setMobileOpen}
-          dbStatus={dbStatus}
+          
           refreshing={refreshing}
           onRefresh={loadData}
           onInstallApp={handleInstallApp}
@@ -187,7 +185,7 @@ export default function App() {
 
           {activeTab === 'database' && (
             <DatabaseView
-              dbStatus={dbStatus}
+              
               onRefreshDb={loadData}
             />
           )}

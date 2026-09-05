@@ -260,7 +260,7 @@ export default function DashboardView({ transactions, products, setActiveTab }) 
           </span>
           <span className="flex items-center gap-1.5 font-medium">
             <span className="w-2 h-2 rounded-full bg-emerald-600"></span>
-            Database Cloud Terhubung
+            Sistem Kasir Aktif
           </span>
         </div>
       </div>

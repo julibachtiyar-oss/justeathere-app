@@ -4,20 +4,16 @@ import {
   ShoppingCart, 
   Receipt, 
   UtensilsCrossed, 
-  Database,
-  ChevronRight,
-  Sparkles,
   Smartphone,
   Heart
 } from 'lucide-react';
 
-export default function Sidebar({ activeTab, setActiveTab, mobileOpen, setMobileOpen, dbStatus, onInstallApp }) {
+export default function Sidebar({ activeTab, setActiveTab, mobileOpen, setMobileOpen, onInstallApp }) {
   const navItems = [
     { id: 'dashboard', label: 'Ringkasan & Analitik', icon: LayoutDashboard, badge: null },
     { id: 'pos', label: 'Kasir & Input Pesanan', icon: ShoppingCart, badge: 'POS' },
     { id: 'transactions', label: 'Riwayat Penjualan', icon: Receipt, badge: '64+' },
     { id: 'menu', label: 'Katalog Menu Bischeese', icon: UtensilsCrossed, badge: '7 Rasa' },
-    { id: 'database', label: 'Supabase Database', icon: Database, badge: dbStatus.connected ? 'Online' : 'Setup' },
   ];
 
   return (
@@ -92,11 +88,7 @@ export default function Sidebar({ activeTab, setActiveTab, mobileOpen, setMobile
                 </div>
                 {item.badge && (
                   <span className={`text-[10px] px-2 py-0.5 rounded-full font-bold tracking-wide ${
-                    item.badge === 'Online' 
-                      ? 'bg-emerald-100 text-emerald-800' 
-                      : item.badge === 'Setup'
-                      ? 'bg-amber-100 text-amber-800'
-                      : isActive 
+                    isActive 
                       ? 'bg-[#E2D4C1] text-[#4A3525]' 
                       : 'bg-[#EAE2D5] text-[#7D6B5D]'
                   }`}>
@@ -108,53 +100,25 @@ export default function Sidebar({ activeTab, setActiveTab, mobileOpen, setMobile
           })}
         </div>
 
-        {/* Database Status Card in Sidebar */}
-        <div className="mx-4 mb-3 p-4 rounded-2xl bg-[#3D2B1F] text-white shadow-lg shadow-black/5">
-          <div className="flex items-center justify-between mb-1.5">
-            <div className="flex items-center gap-2">
-              <span className={`w-2 h-2 rounded-full ${dbStatus.connected ? 'bg-emerald-400 animate-pulse' : 'bg-amber-400'}`}></span>
-              <span className="text-xs font-semibold text-[#E8DEC8]">
-                {dbStatus.connected ? 'Supabase PostgreSQL' : 'Database Setup'}
-              </span>
-            </div>
-            <Sparkles size={13} className="text-[#C69C6D]" />
-          </div>
-          <p className="text-[11px] text-[#CDBEAF] mb-3 leading-relaxed">
-            {dbStatus.connected 
-              ? 'Tersinkronisasi otomatis dengan cloud database.'
-              : 'Tabel database siap digunakan dengan skrip SQL.'}
-          </p>
-          <button 
-            onClick={() => setActiveTab('database')}
-            className="w-full text-center py-1.5 px-3 rounded-xl bg-white/10 hover:bg-white/15 text-[11px] font-bold text-white transition-colors flex items-center justify-center gap-1.5"
-          >
-            <span>{dbStatus.connected ? 'Status Database' : 'Buka Panduan SQL'}</span>
-            <ChevronRight size={13} />
-          </button>
-        </div>
-
         {/* Install to Phone button */}
-        <div className="px-4 mb-3">
+        <div className="px-4 mb-4">
           <button
             onClick={onInstallApp}
-            className="w-full py-2.5 px-3 rounded-xl bg-[#EAE2D5] hover:bg-[#DECDB9] text-[#3D2B1F] text-xs font-bold transition-all flex items-center justify-center gap-2 border border-[#DECDB9]"
+            className="w-full py-2.5 px-3 rounded-xl bg-[#EAE2D5] hover:bg-[#DECDB9] text-[#3D2B1F] text-xs font-bold transition-all flex items-center justify-center gap-2 border border-[#DECDB9] shadow-xs active:scale-98"
           >
             <Smartphone size={15} className="text-[#B47640]" />
             <span>Install Aplikasi di HP</span>
           </button>
         </div>
 
-        {/* User Info Footer */}
-        <div className="p-4 border-t border-[#EAE2D5] bg-[#FAF5EE] flex items-center justify-between">
-          <div className="flex items-center gap-2.5">
-            <div className="w-8 h-8 rounded-full bg-[#EAE2D5] text-[#4A3525] flex items-center justify-center font-bold text-xs font-serif">
-              JB
-            </div>
-            <div className="text-left">
-              <div className="text-xs font-bold text-[#3D2B1F]">Juli Bachtiyar</div>
-              <div className="text-[10px] text-[#8C7A6B]">Admin & Owner</div>
-            </div>
-          </div>
+        {/* Clean Brand Footer (No Personal Names, Clean & Professional) */}
+        <div className="p-4 border-t border-[#EAE2D5] bg-[#FAF5EE] text-center">
+          <p className="text-xs font-serif font-bold text-[#3D2B1F] tracking-wide">
+            BISCHEESE by Justeathere
+          </p>
+          <p className="text-[10px] text-[#8C7A6B] mt-0.5 font-medium">
+            Aplikasi Kasir & Penjualan Resmi
+          </p>
         </div>
       </aside>
     </>

@@ -546,7 +546,7 @@ export default function PosView({ products, transactions, onAddTransaction }) {
               className="w-full py-3.5 rounded-xl bg-bischeese-600 hover:bg-bischeese-700 text-white font-serif font-bold text-sm sm:text-base shadow-md shadow-bischeese-900/15 active:scale-[0.98] transition-all disabled:opacity-50 flex items-center justify-center gap-2"
             >
               <Sparkles size={18} />
-              <span>{loading ? 'Menyimpan ke Supabase...' : 'Simpan Transaksi Kasir'}</span>
+              <span>{loading ? 'Menyimpan Transaksi...' : 'Simpan Transaksi Kasir'}</span>
             </button>
           </form>
         </div>

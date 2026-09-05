@@ -1,11 +1,10 @@
 import React from 'react';
-import { Menu, PlusCircle, RefreshCw, Smartphone, Sparkles } from 'lucide-react';
+import { Menu, PlusCircle, RefreshCw, Smartphone } from 'lucide-react';
 
 export default function Header({ 
   activeTab, 
   setMobileOpen, 
   setActiveTab, 
-  dbStatus, 
   refreshing, 
   onRefresh,
   onInstallApp
@@ -26,10 +25,6 @@ export default function Header({
     menu: { 
       title: 'Katalog Varian & Harga Bischeese', 
       subtitle: 'Daftar 7 rasa utama dan ukuran spesial Bischeese' 
-    },
-    database: { 
-      title: 'Integrasi Database Supabase Cloud', 
-      subtitle: 'Koneksi real-time ke PostgreSQL Supabase' 
     }
   };
 
@@ -56,29 +51,12 @@ export default function Header({
       </div>
 
       <div className="flex items-center gap-2 sm:gap-2.5">
-        {/* Supabase Status Pill */}
-        <button 
-          onClick={() => setActiveTab('database')}
-          className={`flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-semibold border transition-all ${
-            dbStatus.connected 
-              ? 'bg-[#EBF7EE] text-emerald-800 border-emerald-200 hover:bg-emerald-100' 
-              : 'bg-[#FEF7EC] text-amber-800 border-amber-200 hover:bg-amber-100'
-          }`}
-          title={dbStatus.connected ? 'Supabase Connected' : 'Klik untuk melihat status database'}
-        >
-          <span className={`w-2 h-2 rounded-full ${dbStatus.connected ? 'bg-emerald-500 animate-pulse' : 'bg-amber-500'}`} />
-          <span className="hidden md:inline font-medium">
-            {dbStatus.connected ? 'Supabase Live' : 'Setup Database'}
-          </span>
-          <span className="md:hidden">Cloud</span>
-        </button>
-
         {/* Refresh button */}
         <button
           onClick={onRefresh}
           disabled={refreshing}
           className="p-2 rounded-xl border border-[#EAE2D5] bg-white text-[#645447] hover:bg-[#F5EFE6] transition-colors disabled:opacity-50"
-          title="Segarkan Data"
+          title="Segarkan Data Penjualan"
         >
           <RefreshCw size={16} className={refreshing ? 'animate-spin text-[#B47640]' : ''} />
         </button>
